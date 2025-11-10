@@ -1,59 +1,70 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Pi Remote Light Switch
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This project uses a Raspberry Pi and a motor to remotely control a physical light switch. The system is housed in a custom 3D-printed casing and is controlled via a web interface.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+* **Remote Control:** Toggle a light switch from a web browser.
+* **3D-Printed Casing:** A custom-designed case to house the Raspberry Pi and motor, mounted over the light switch.
+* **Motorized Action:** A servo or stepper motor physically flips the switch.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Hardware
 
-## Learning Laravel
+* **Raspberry Pi:** (Specify your model, e.g., Raspberry Pi 4 Model B)
+* **Motor:** (Specify your motor, e.g., SG90 servo motor)
+* **3D-Printed Parts:**
+    * Main Casing
+    * Motor Mount
+    * Switch Actuator Arm
+* **Power Supply:** (e.g., 5V USB-C for the Pi)
+* **Jumper Wires**
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+*(You would add your `.stl` or other 3D model files to a folder in this repository, perhaps named `3d-models/`)*
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## Software & Code
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+This project is built in two main parts:
 
-### Premium Partners
+### 1. Web Application (Laravel)
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+The web interface is built using the Laravel PHP framework.
 
-## Contributing
+* **Framework:** Laravel
+* **Key Files:**
+    * `routes/web.php`: Defines the web routes (e.g., `/light/on`, `/light/off`) that trigger the action.
+    * `app/Http/Controllers/LightController.php`: The controller that handles the web request and executes the Python script.
+    * `resources/views/welcome.blade.php`: The simple web page with buttons to control the light.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 2. Raspberry Pi Script (Python)
 
-## Code of Conduct
+A Python script on the Raspberry Pi controls the motor connected to the GPIO pins.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+* **Language:** Python
+* **Key Libraries:**
+    * `RPi.GPIO`: Used to control the Raspberry Pi's GPIO pins.
+    * `time`: Used for delays to manage the motor's movement.
+* **Script:** `motor_control.py` (This is an example name)
+    * The script accepts arguments (e.g., `on` or `off`).
+    * It activates the motor, rotating it to the correct position to flip the switch.
+    * The Laravel application calls this script using a function like `shell_exec()`.
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Installation & Setup
 
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+1.  **3D Print:** Print all the components from the `3d-models/` directory.
+2.  **Assemble Hardware:** Mount the Raspberry Pi and motor in the casing as designed.
+3.  **Deploy Web App:**
+    * Clone this repository onto your Raspberry Pi: `git clone https://github.com/casperadamus/pi-remote-light.git`
+    * Install PHP, Composer, and a web server (like Nginx or Caddy).
+    * Navigate to the project directory: `cd pi-remote-light`
+    * Install dependencies: `composer install`
+    * Set up your environment: `cp .env.example .env` and then `php artisan key:generate`
+    * Configure your web server to point to the `public/` directory.
+4.  **Setup Python Script:**
+    * Make sure your Python script (e.g., `motor_control.py`) is executable: `chmod +x motor_control.py`
+    * Ensure the web server user (e.g., `www-data`) has permission to execute the script and access GPIO pins.
