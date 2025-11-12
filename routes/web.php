@@ -15,6 +15,13 @@ use phpseclib3\Net\SSH2;
 */
 
 /**
+ * Root route - redirect to dashboard
+ */
+Route::get('/', function () {
+    return redirect()->route('dashboard');
+});
+
+/**
  * Route to SHOW the button page
  */
 Route::get('/dashboard', function () {
