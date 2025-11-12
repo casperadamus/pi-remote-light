@@ -1,6 +1,6 @@
 # Pi Remote Light Switch
 
-This project uses a Raspberry Pi and a motor to remotely control a physical light switch. The system is housed in a custom 3D-printed casing and is controlled via a web interface.
+his project uses a Raspberry Pi and a motor to remotely control a physical light switch. The system is housed in a custom 3D-printed casing and is controlled via a web interface.
 
 ## Features
 
