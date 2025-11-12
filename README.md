@@ -12,12 +12,11 @@ This project uses a Raspberry Pi and a motor to remotely control a physical ligh
 
 ## Hardware
 
-* **Raspberry Pi:** (Specify your model, e.g., Raspberry Pi 4 Model B)
-* **Motor:** (Specify your motor, e.g., SG90 servo motor)
+* **Raspberry Pi:** Raspberry Pi 4 Model B
+* **Motor:**  MG995 servo motor
 * **3D-Printed Parts:**
     * Main Casing
     * Motor Mount
-    * Switch Actuator Arm
 * **Power Supply:** (e.g., 5V USB-C for the Pi)
 * **Jumper Wires**
 
