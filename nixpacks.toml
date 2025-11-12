@@ -10,10 +10,7 @@ cmds = [
     "mkdir -p storage/logs",
     "mkdir -p database",
     "touch database/database.sqlite",
-    "chmod -R 775 storage bootstrap/cache database",
-    "php artisan config:cache",
-    "php artisan route:cache",
-    "php artisan view:cache"
+    "chmod -R 775 storage bootstrap/cache database"
 ]
 
 [start]

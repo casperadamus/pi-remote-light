@@ -15,6 +15,12 @@ touch database/database.sqlite
 # Set permissions
 chmod -R 775 storage bootstrap/cache database
 
+# Clear any cached config (important for Railway)
+php artisan config:clear
+php artisan cache:clear
+php artisan view:clear
+php artisan route:clear
+
 # Run migrations
 php artisan migrate --force
 

@@ -1,0 +1,43 @@
+# Railway Environment Variables - COPY THESE EXACTLY
+
+Set these in Railway Dashboard → Your Project → Variables:
+
+```
+APP_NAME=Pi Remote Light
+APP_ENV=production
+APP_KEY=base64:EnPxedJVAHAXM/Wp3GaborUdy5N7nylq7sh66w3G4nw=
+APP_DEBUG=false
+APP_URL=https://your-domain.up.railway.app
+APP_LOCALE=en
+APP_FALLBACK_LOCALE=en
+BCRYPT_ROUNDS=12
+LOG_CHANNEL=stack
+LOG_LEVEL=error
+DB_CONNECTION=sqlite
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+BROADCAST_CONNECTION=log
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=database
+CACHE_STORE=database
+```
+
+## Critical Variables (MUST SET):
+1. **APP_KEY** - Use the one above or generate new: `php artisan key:generate --show`
+2. **APP_URL** - Get from Railway after generating domain (Settings → Networking → Generate Domain)
+3. **APP_ENV** - MUST be `production`
+4. **APP_DEBUG** - MUST be `false` for production
+
+## After Setting Variables:
+1. Save all variables in Railway
+2. Railway will automatically redeploy
+3. Check logs: Deployments → View Logs
+4. Look for "Setting up Laravel for Railway..." message
+
+## If Still Getting 500 Error:
+Check Railway logs for these common errors:
+- "Please provide a valid app key" → APP_KEY not set correctly
+- "Permission denied" → Storage permissions issue (should be fixed by start.sh)
+- "Database file not found" → Should be created by start.sh, check logs
+- "Class not found" → Composer packages issue, check build logs
