@@ -58,6 +58,39 @@ A Python script on the Raspberry Pi controls the motor connected to the GPIO pin
 
 ## Installation & Setup
 
+### Option 1: Deploy to Railway.app (Cloud Hosting)
+
+Deploy the web interface to Railway for public access, then connect it to your Raspberry Pi.
+
+1. **Create a Railway Account:**
+   * Go to [Railway.app](https://railway.app) and sign up with your GitHub account
+
+2. **Deploy from GitHub:**
+   * Click "New Project" → "Deploy from GitHub repo"
+   * Select this repository (`pi-remote-light`)
+   * Railway will automatically detect Laravel and deploy it
+
+3. **Configure Environment Variables:**
+   * In Railway dashboard, go to your project → Variables
+   * Click "Add Variable" and set:
+     * `APP_KEY`: Run `php artisan key:generate --show` locally and copy the key
+     * `APP_ENV`: `production`
+     * `APP_DEBUG`: `false`
+     * `APP_URL`: Your Railway app URL (e.g., `https://your-app.railway.app`)
+   * Railway automatically handles the database (SQLite works out of the box)
+
+4. **Generate Domain:**
+   * In Railway dashboard, go to Settings → Networking
+   * Click "Generate Domain" to get your public URL
+
+5. **Connect to Your Raspberry Pi:**
+   * Configure the web app to communicate with your Pi via webhooks/API
+   * Or use ngrok on your Pi to expose the GPIO control endpoint
+
+### Option 2: Local Setup on Raspberry Pi
+
+Run the entire application on your Raspberry Pi for local or LAN access.
+
 1.  **3D Print:** Print all the components from the `3d-models/` directory.
 2.  **Assemble Hardware:** Mount the Raspberry Pi and motor in the casing as designed.
 3.  **Deploy Web App:**
@@ -66,7 +99,12 @@ A Python script on the Raspberry Pi controls the motor connected to the GPIO pin
     * Navigate to the project directory: `cd pi-remote-light`
     * Install dependencies: `composer install`
     * Set up your environment: `cp .env.example .env` and then `php artisan key:generate`
+    * Create database: `touch database/database.sqlite` and run `php artisan migrate`
     * Configure your web server to point to the `public/` directory.
 4.  **Setup Python Script:**
     * Make sure your Python script (e.g., `motor_control.py`) is executable: `chmod +x motor_control.py`
     * Ensure the web server user (e.g., `www-data`) has permission to execute the script and access GPIO pins.
+5.  **Expose Publicly (Optional):**
+    * Install ngrok: `snap install ngrok` or download from [ngrok.com](https://ngrok.com)
+    * Run: `ngrok http 8000`
+    * Share the generated URL for public access
