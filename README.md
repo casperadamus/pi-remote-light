@@ -23,7 +23,10 @@ This project uses a Raspberry Pi and a motor to remotely control a physical ligh
 *(You would add your `.stl` or other 3D model files to a folder in this repository, perhaps named `3d-models/`)*
 
 ---
+## 3D Print
+![3D Printed Casing](images/image1.png)
 
+---
 ## Software & Code
 
 This project is built in two main parts:
