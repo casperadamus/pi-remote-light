@@ -8,9 +8,9 @@ cmds = ["composer install --no-dev --optimize-autoloader"]
 cmds = [
     "mkdir -p storage/framework/{sessions,views,cache}",
     "mkdir -p storage/logs",
-    "mkdir -p database",
-    "touch database/database.sqlite",
-    "chmod -R 775 storage bootstrap/cache database"
+    "chmod -R 775 storage bootstrap/cache",
+    "php artisan config:clear || true",
+    "php artisan cache:clear || true"
 ]
 
 [start]

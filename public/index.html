@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi Remote Light Control</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin-bottom: 30px;
+        }
+        
+        .control-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            margin: 20px 0;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .control-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .message {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-text {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+        
+        .status-indicator {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 Pi Remote Light</h1>
+        <p class="subtitle">Control your Raspberry Pi light switch</p>
+        
+        <div class="status-badge">
+            🚀 Hosted on Netlify
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <button id="controlBtn" class="control-btn" onclick="controlLight()">
+            Turn On/Off Light
+        </button>
+        
+        <div class="status-text">
+            Status: <span id="status" class="status-indicator">Ready</span>
+        </div>
+    </div>
+
+    <script>
+        async function controlLight() {
+            const btn = document.getElementById('controlBtn');
+            const msg = document.getElementById('message');
+            const status = document.getElementById('status');
+            
+            // Show loading state
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span>Connecting...';
+            status.textContent = 'Connecting to Pi...';
+            status.style.color = '#ff9800';
+            msg.style.display = 'none';
+            
+            try {
+                // Call your Pi directly via SSH over HTTP
+                const response = await fetch('/.netlify/functions/pi-control', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'toggle',
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Show result
+                msg.textContent = data.message;
+                msg.className = 'message ' + (data.success ? 'success' : 'error');
+                msg.style.display = 'block';
+                
+                status.textContent = data.success ? 'Command sent!' : 'Error occurred';
+                status.style.color = data.success ? '#4CAF50' : '#f44336';
+                
+            } catch (error) {
+                console.error('Network error:', error);
+                msg.textContent = 'Network error: ' + error.message;
+                msg.className = 'message error';
+                msg.style.display = 'block';
+                
+                status.textContent = 'Connection failed';
+                status.style.color = '#f44336';
+            } finally {
+                // Reset button
+                btn.disabled = false;
+                btn.textContent = 'Turn On/Off Light';
+                
+                // Reset status after 3 seconds
+                setTimeout(() => {
+                    status.textContent = 'Ready';
+                    status.style.color = '#4CAF50';
+                }, 3000);
+            }
+        }
+        
+        // Add some interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click effect to button
+            const btn = document.getElementById('controlBtn');
+            btn.addEventListener('mousedown', function() {
+                this.style.transform = 'translateY(0px) scale(0.98)';
+            });
+            
+            btn.addEventListener('mouseup', function() {
+                this.style.transform = 'translateY(-2px) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>

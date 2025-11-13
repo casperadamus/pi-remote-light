@@ -1,0 +1,8 @@
+{
+  "name": "pi-control-function",
+  "version": "1.0.0",
+  "description": "Netlify function to control Pi",
+  "main": "pi-control.js",
+  "dependencies": {},
+  "devDependencies": {}
+}
