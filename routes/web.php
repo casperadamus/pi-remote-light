@@ -15,10 +15,17 @@ use phpseclib3\Net\SSH2;
 */
 
 /**
- * Root route - redirect to dashboard
+ * Health check route for debugging
  */
-Route::get('/', function () {
-    return redirect()->route('dashboard');
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'OK',
+        'timestamp' => now(),
+        'php_version' => PHP_VERSION,
+        'laravel_version' => app()->version(),
+        'database' => file_exists(database_path('database.sqlite')) ? 'exists' : 'missing',
+        'app_key' => config('app.key') ? 'set' : 'missing'
+    ]);
 });
 
 /**
@@ -27,6 +34,18 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
+
+/**
+ * Root route - redirect to dashboard
+ */
+Route::get('/', function () {
+    try {
+        return redirect()->route('dashboard');
+    } catch (\Exception $e) {
+        // Fallback if redirect fails
+        return view('dashboard');
+    }
+});
 
 
 /**

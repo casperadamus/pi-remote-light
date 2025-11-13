@@ -31,14 +31,31 @@ if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 fi
 
+# Debug: Show environment info
+echo "PHP Version: $(php -v | head -n 1)"
+echo "Laravel Version: $(php artisan --version)"
+echo "Current directory: $(pwd)"
+echo "Database file exists: $(ls -la database/ 2>/dev/null || echo 'database directory not found')"
+echo "APP_KEY set: $([ -n "$APP_KEY" ] && echo 'YES' || echo 'NO')"
+echo "Environment: $APP_ENV"
+
 # Clear any cached config (important for Railway)
 php artisan config:clear
 php artisan cache:clear
 php artisan view:clear
 php artisan route:clear
 
+# Test database connection
+echo "Testing database connection..."
+php artisan migrate:status || echo "Migration status check failed"
+
 # Run migrations
+echo "Running migrations..."
 php artisan migrate --force
+
+# Test if routes are working
+echo "Testing route cache..."
+php artisan route:list || echo "Route list failed"
 
 echo "Starting Laravel server..."
 php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
