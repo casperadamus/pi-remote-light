@@ -1,5 +1,4 @@
-const { exec } = require('child_process');
-
+// Netlify function to control Pi via HTTP request
 exports.handler = async (event, context) => {
   // Set CORS headers
   const headers = {
@@ -30,45 +29,36 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // Pi connection details
-    const PI_IP = '100.94.110.127';
-    const PI_USER = 'casperadamus';
-    const PI_PASS = '1016';
-    const COMMAND = 'python3 lighton.py';
-
-    // For security, you might want to use environment variables:
-    // const PI_IP = process.env.PI_IP;
-    // const PI_USER = process.env.PI_USER;
-    // const PI_PASS = process.env.PI_PASS;
-
-    // Use sshpass to connect and run command
-    const sshCommand = `sshpass -p '${PI_PASS}' ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 ${PI_USER}@${PI_IP} '${COMMAND} > /tmp/script.log 2>&1 &'`;
+    // For now, return success to test if the basic setup works
+    // We'll add real Pi control after confirming the infrastructure works
     
-    return new Promise((resolve) => {
-      exec(sshCommand, { timeout: 10000 }, (error, stdout, stderr) => {
-        if (error) {
-          console.error('SSH Error:', error.message);
-          resolve({
-            statusCode: 200,
-            headers,
-            body: JSON.stringify({
-              success: false,
-              message: `Connection error: ${error.message}. Make sure Pi is online and accessible.`
-            })
-          });
-        } else {
-          resolve({
-            statusCode: 200,
-            headers,
-            body: JSON.stringify({
-              success: true,
-              message: '✅ Light command sent to Pi successfully!',
-              timestamp: new Date().toISOString()
-            })
-          });
-        }
-      });
-    });
+    console.log('Pi control function called at:', new Date().toISOString());
+    
+    // Simulate Pi connection (replace with real SSH later)
+    const simulateSuccess = Math.random() > 0.2; // 80% success rate for testing
+    
+    if (simulateSuccess) {
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          message: '✅ Test successful! Netlify function is working. (Real Pi control coming next)',
+          timestamp: new Date().toISOString(),
+          note: 'This is a test response - Pi SSH will be added once confirmed working'
+        })
+      };
+    } else {
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: false,
+          message: '⚠️ Simulated connection error (for testing). Function is working correctly.',
+          timestamp: new Date().toISOString()
+        })
+      };
+    }
 
   } catch (error) {
     console.error('Function Error:', error);
