@@ -1,4 +1,7 @@
-// Netlify function to control Pi via HTTP request
+// Netlify function to control Pi via SSH
+const { exec } = require('child_process');
+const util = require('util');
+
 exports.handler = async (event, context) => {
   // Set CORS headers
   const headers = {
@@ -34,62 +37,71 @@ exports.handler = async (event, context) => {
     const PI_USER = 'casperadamus';
     const PI_PASS = '1016';
     const COMMAND = 'python3 lighton.py';
-    const PI_PORT = '3000';
     
-    console.log('Attempting to connect to Pi at:', PI_IP);
+    console.log('Attempting SSH connection to Pi at:', PI_IP);
     
-    // Method 1: Try HTTP request first (faster and more reliable)
-    const piUrl = `http://${PI_IP}:${PI_PORT}/toggle-light`;
+    // Use SSH to connect to Pi and execute command
+    const execPromise = util.promisify(exec);
+    
+    // SSH command with password authentication
+    // Note: In production, you might want to use SSH keys instead of passwords
+    const sshCommand = `sshpass -p '${PI_PASS}' ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${PI_USER}@${PI_IP} '${COMMAND} > /tmp/script.log 2>&1 &'`;
     
     try {
-      const response = await fetch(piUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          action: 'toggle',
-          timestamp: new Date().toISOString()
-        }),
-        signal: AbortSignal.timeout(5000) // 5 second timeout
-      });
-
-      if (response.ok) {
-        const piData = await response.json();
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({
-            success: true,
-            message: '✅ Light command sent to Pi successfully via HTTP!',
-            timestamp: new Date().toISOString(),
-            method: 'HTTP',
-            piResponse: piData
-          })
-        };
+      // Execute SSH command with timeout
+      const { stdout, stderr } = await Promise.race([
+        execPromise(sshCommand),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('SSH connection timeout')), 15000)
+        )
+      ]);
+      
+      console.log('SSH command executed successfully');
+      if (stderr) {
+        console.log('SSH stderr:', stderr);
       }
-    } catch (httpError) {
-      console.log('HTTP method failed, trying SSH fallback:', httpError.message);
+      
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          message: '✅ Light command sent to Pi successfully via SSH!',
+          timestamp: new Date().toISOString(),
+          method: 'SSH',
+          command: COMMAND
+        })
+      };
+      
+    } catch (sshError) {
+      console.error('SSH Error:', sshError);
+      
+      let errorMessage = 'SSH connection failed';
+      if (sshError.message.includes('timeout')) {
+        errorMessage = 'SSH connection timeout - Pi may be offline';
+      } else if (sshError.message.includes('Permission denied')) {
+        errorMessage = 'SSH authentication failed - check credentials';
+      } else if (sshError.message.includes('No route to host')) {
+        errorMessage = 'Cannot reach Pi - check IP address and network';
+      } else if (sshError.message.includes('sshpass: command not found')) {
+        errorMessage = 'SSH tools not available in serverless environment';
+      }
+      
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: false,
+          message: `❌ ${errorMessage}: ${sshError.message}`,
+          timestamp: new Date().toISOString(),
+          debug: {
+            error: sshError.message,
+            command: 'sshpass ssh command',
+            pi_ip: PI_IP
+          }
+        })
+      };
     }
-    
-    // Method 2: SSH fallback (if HTTP server isn't running)
-    // Note: This requires SSH to be available in the serverless environment
-    // For now, we'll return a helpful message about setting up the HTTP server
-    
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({
-        success: false,
-        message: '⚠️ Pi HTTP server not responding. Please run the HTTP server on your Pi:\n\n1. Copy pi-server.py to your Pi\n2. Run: python3 pi-server.py\n3. Try the button again',
-        timestamp: new Date().toISOString(),
-        instructions: {
-          step1: 'SSH to your Pi: ssh casperadamus@100.94.110.127',
-          step2: 'Copy pi-server.py to your Pi',
-          step3: 'Run: python3 pi-server.py',
-          step4: 'Server will start on port 3000',
-          step5: 'Try the light button again'
-        }
-      })
-    };
 
   } catch (error) {
     console.error('Function Error:', error);
