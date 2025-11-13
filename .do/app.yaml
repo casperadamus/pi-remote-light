@@ -1,0 +1,36 @@
+name: pi-remote-light
+services:
+- name: web
+  source_dir: /
+  github:
+    repo: casperadamus/pi-remote-light
+    branch: main
+  run_command: php artisan serve --host=0.0.0.0 --port=$PORT
+  build_command: |
+    composer install --no-dev --optimize-autoloader
+    mkdir -p storage/framework/{sessions,views,cache}
+    mkdir -p storage/logs
+    mkdir -p bootstrap/cache
+    chmod -R 775 storage bootstrap/cache
+    php artisan config:clear
+    php artisan cache:clear
+    php artisan view:clear
+  environment_slug: php
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  http_port: 8080
+  envs:
+  - key: APP_NAME
+    value: "Pi Remote Light"
+  - key: APP_ENV
+    value: production
+  - key: APP_DEBUG
+    value: "false"
+  - key: LOG_LEVEL
+    value: error
+  - key: SESSION_DRIVER
+    value: array
+  - key: CACHE_STORE
+    value: array
+  - key: QUEUE_CONNECTION
+    value: sync

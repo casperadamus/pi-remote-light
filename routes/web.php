@@ -81,8 +81,8 @@ Route::get('/', function () {
             status.textContent = "Sending command...";
             msg.style.display = "none";
             
-            // Call the control endpoint
-            fetch("/control")
+            // Call the Pi control endpoint
+            fetch("/pi-control")
                 .then(response => response.json())
                 .then(data => {
                     msg.textContent = data.message;
@@ -122,12 +122,39 @@ Route::get('/control', function () {
 });
 
 /**
- * Pi control endpoint - REAL VERSION (will add SSH later)
+ * Pi control endpoint - REAL VERSION with SSH
  */
 Route::get('/pi-control', function () {
-    // TODO: Add SSH logic here once basic app is working
-    return response()->json([
-        'success' => false,
-        'message' => 'Pi control not implemented yet - but the app works!'
-    ]);
+    try {
+        // Pi connection details
+        $pi_ip = '100.94.110.127';
+        $pi_user = 'casperadamus';
+        $pi_pass = '1016';
+        $command = 'python3 lighton.py';
+        
+        // Use phpseclib3 for SSH
+        $ssh = new phpseclib3\Net\SSH2($pi_ip);
+        $ssh->setTimeout(5);
+        
+        if (!$ssh->login($pi_user, $pi_pass)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'SSH Login Failed. Check Pi connection.'
+            ]);
+        }
+        
+        // Run command in background
+        $ssh->exec($command . ' > /tmp/script.log 2>&1 &');
+        
+        return response()->json([
+            'success' => true,
+            'message' => '✅ Light command sent to Pi successfully!'
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Pi connection error: ' . $e->getMessage()
+        ]);
+    }
 });
