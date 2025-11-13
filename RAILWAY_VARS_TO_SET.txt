@@ -1,0 +1,15 @@
+# COPY THESE EXACT VARIABLES TO RAILWAY DASHBOARD
+# Go to: Railway Dashboard → Your Project → Variables → Add Variable
+
+APP_KEY=base64:9s59lxqmZoucucRUK5sQeKppy9lx7JQMbjQ4eISK1r8=
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://pi-remote-light-production.up.railway.app
+DB_CONNECTION=sqlite
+DB_DATABASE=/app/database/database.sqlite
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+LOG_LEVEL=error
+LOG_CHANNEL=stack
