@@ -46,7 +46,7 @@ Route::get('/dashboard', function () {
 
 
 /**
- * Route to HANDLE the button click
+ * Route to HANDLE the button click - NO DATABASE VERSION
  */
 Route::post('/run-script', function () {
     
@@ -57,34 +57,36 @@ Route::post('/run-script', function () {
     $command = 'python3 lighton.py'; // The script you want to run
     // ----------------------------------------
 
-
     // --- 2. THE SSH LOGIC ---
     try {
         $ssh = new SSH2($pi_ip);
         $ssh->setTimeout(5); // 5-second timeout
 
         if (!$ssh->login($pi_user, $pi_pass)) {
-            // Login failed
-            return redirect()->route('dashboard')
-                ->with('error', 'SSH Login Failed. Check IP, username, and password.');
+            // Login failed - return JSON instead of session redirect
+            return response()->json([
+                'success' => false,
+                'message' => 'SSH Login Failed. Check IP, username, and password.'
+            ], 400);
         }
 
         // --- 3. RUN THE COMMAND ---
-        // This command runs your script and returns *immediately*.
-        // It runs the script in the background on the Pi so your website doesn't hang.
-        // The ' > /tmp/script.log 2>&1 &' part logs output/errors to a file and runs in the background.
         $non_blocking_command = $command . ' > /tmp/script.log 2>&1 &';
         
         $ssh->exec($non_blocking_command);
 
-        // Success! Redirect back with a success message
-        return redirect()->route('dashboard')
-            ->with('status', 'Command sent to Pi successfully!');
+        // Success! Return JSON response
+        return response()->json([
+            'success' => true,
+            'message' => 'Command sent to Pi successfully!'
+        ]);
 
     } catch (\Exception $e) {
         // Handle connection errors (e.g., Pi is offline)
-        return redirect()->route('dashboard')
-            ->with('error', 'Error connecting to Pi: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error connecting to Pi: ' . $e->getMessage()
+        ], 500);
     }
 
-})->name('run-script'); // <-- This name fixes the error
+})->name('run-script');

@@ -14,4 +14,4 @@ cmds = [
 ]
 
 [start]
-cmd = "bash start-simple.sh"
+cmd = "bash start-no-db.sh"

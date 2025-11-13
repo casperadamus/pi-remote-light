@@ -58,19 +58,54 @@
     <div class="container">
         <h1>Pi Remote Control</h1>
 
-        @if (session('status'))
-            <div class="message status">{{ session('status') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="message error">{{ session('error') }}</div>
-        @endif
+        <!-- Message display area -->
+        <div id="message" class="message" style="display: none; margin-top: 1.5rem;"></div>
 
-        <form action="{{ route('run-script') }}" method="POST" style="margin-top: 2rem;">
-            @csrf
-            <button type="submit" class="btn">
+        <form id="piForm" style="margin-top: 2rem;">
+            <button type="submit" class="btn" id="piButton">
                 Turn On/Off
             </button>
         </form>
+
+        <script>
+            document.getElementById('piForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const button = document.getElementById('piButton');
+                const messageDiv = document.getElementById('message');
+                
+                // Disable button and show loading
+                button.disabled = true;
+                button.textContent = 'Sending...';
+                messageDiv.style.display = 'none';
+                
+                try {
+                    const response = await fetch('{{ route("run-script") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    // Show message
+                    messageDiv.textContent = data.message;
+                    messageDiv.className = 'message ' + (data.success ? 'status' : 'error');
+                    messageDiv.style.display = 'block';
+                    
+                } catch (error) {
+                    messageDiv.textContent = 'Network error: ' + error.message;
+                    messageDiv.className = 'message error';
+                    messageDiv.style.display = 'block';
+                } finally {
+                    // Re-enable button
+                    button.disabled = false;
+                    button.textContent = 'Turn On/Off';
+                }
+            });
+        </script>
     </div>
 </body>
 </html>
