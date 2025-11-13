@@ -12,6 +12,11 @@ mkdir -p database
 # Create SQLite database if it doesn't exist
 touch database/database.sqlite
 
+# Make sure the database path is correct for production
+if [ "$RAILWAY_ENVIRONMENT" = "production" ]; then
+    export DB_DATABASE="/app/database/database.sqlite"
+fi
+
 # Set permissions
 chmod -R 775 storage bootstrap/cache database
 
