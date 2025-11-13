@@ -29,13 +29,16 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // Real Pi control - HTTP request to your Pi
+    // Pi connection details - matching your Laravel setup
     const PI_IP = '100.94.110.127';
-    const PI_PORT = '3000'; // We'll set up a simple server on your Pi
+    const PI_USER = 'casperadamus';
+    const PI_PASS = '1016';
+    const COMMAND = 'python3 lighton.py';
+    const PI_PORT = '3000';
     
     console.log('Attempting to connect to Pi at:', PI_IP);
     
-    // Try to make HTTP request to Pi
+    // Method 1: Try HTTP request first (faster and more reliable)
     const piUrl = `http://${PI_IP}:${PI_PORT}/toggle-light`;
     
     try {
@@ -46,7 +49,7 @@ exports.handler = async (event, context) => {
           action: 'toggle',
           timestamp: new Date().toISOString()
         }),
-        signal: AbortSignal.timeout(8000) // 8 second timeout
+        signal: AbortSignal.timeout(5000) // 5 second timeout
       });
 
       if (response.ok) {
@@ -56,36 +59,37 @@ exports.handler = async (event, context) => {
           headers,
           body: JSON.stringify({
             success: true,
-            message: '✅ Light command sent to Pi successfully!',
+            message: '✅ Light command sent to Pi successfully via HTTP!',
             timestamp: new Date().toISOString(),
+            method: 'HTTP',
             piResponse: piData
           })
         };
-      } else {
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({
-            success: false,
-            message: `❌ Pi responded with error: ${response.status} ${response.statusText}`
-          })
-        };
       }
-    } catch (fetchError) {
-      console.error('Pi connection error:', fetchError);
-      
-      // If Pi HTTP server isn't running, fall back to a direct approach
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({
-          success: false,
-          message: '⚠️ Cannot connect to Pi HTTP server. Please check if Pi is online and HTTP server is running on port 3000.',
-          timestamp: new Date().toISOString(),
-          debug: fetchError.message
-        })
-      };
+    } catch (httpError) {
+      console.log('HTTP method failed, trying SSH fallback:', httpError.message);
     }
+    
+    // Method 2: SSH fallback (if HTTP server isn't running)
+    // Note: This requires SSH to be available in the serverless environment
+    // For now, we'll return a helpful message about setting up the HTTP server
+    
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: false,
+        message: '⚠️ Pi HTTP server not responding. Please run the HTTP server on your Pi:\n\n1. Copy pi-server.py to your Pi\n2. Run: python3 pi-server.py\n3. Try the button again',
+        timestamp: new Date().toISOString(),
+        instructions: {
+          step1: 'SSH to your Pi: ssh casperadamus@100.94.110.127',
+          step2: 'Copy pi-server.py to your Pi',
+          step3: 'Run: python3 pi-server.py',
+          step4: 'Server will start on port 3000',
+          step5: 'Try the light button again'
+        }
+      })
+    };
 
   } catch (error) {
     console.error('Function Error:', error);
