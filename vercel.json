@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "functions": {
-    "api/index.php": {
-      "runtime": "vercel-php@0.6.0"
+  "builds": [
+    {
+      "src": "api/index.php",
+      "use": "vercel-php@0.6.0"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/(.*)",
@@ -16,6 +17,7 @@
     "APP_DEBUG": "false",
     "SESSION_DRIVER": "array",
     "CACHE_STORE": "array",
-    "QUEUE_CONNECTION": "sync"
+    "QUEUE_CONNECTION": "sync",
+    "APP_KEY": "base64:9s59lxqmZoucucRUK5sQeKppy9lx7JQMbjQ4eISK1r8="
   }
 }
